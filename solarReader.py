@@ -9,6 +9,7 @@ from datetime import datetime
 import math
 import requests
 
+offset = 0 #german summer time (Use -3600 for german utc+1 winter time)
 db = solardb.DataBase()
 
 #get data in textfile
@@ -42,7 +43,7 @@ for words in content.split('\n'):
 
 #try to add rows if formatted correctly and timestamp newer than newest timestamp in db
 for i in range(len(table)):
-    if(len(table[i])> 20 and int(table[i][0])-3600>maxtime): #-3600 (1h) for utc+1 time (Berlin Germany)
+    if(len(table[i])> 20 and int(table[i][0])-offset>maxtime):
         try:
             time = int(table[i][0])
             ac1 = int(table[i][18])
@@ -51,7 +52,7 @@ for i in range(len(table)):
             power = ac1+ac2+ac3
             power = power/4 #recalc in kw/h
             timestamp = int(time)
-            dt_object = datetime.fromtimestamp(timestamp-3600) #read timestamp -3600 (1h) for utc+1 time (Berlin Germany)
+            dt_object = datetime.fromtimestamp(timestamp-offset)
             date = dt_object
             db.query("INSERT INTO history (timestamp, date, wh, ac1, ac2, ac3) VALUES ("+str(timestamp)+", '"+str(date)+"', "+str(power)+", "+str(ac1)+", "+str(ac2)+", "+str(ac3)+");")
             print("row: "+str(i)+" / "+str(len(table))+" added")
